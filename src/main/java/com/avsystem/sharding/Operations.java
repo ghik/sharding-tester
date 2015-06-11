@@ -19,6 +19,19 @@ public class Operations {
     private MongoDatabase db = mongo.getDatabase(dbName);
     private MongoCollection<Document> coll = db.getCollection("tweets");
 
+    private long lastReport = 0;
+    private long count = 0;
+
+    private void reportProgress(int amount) {
+        count += amount;
+        long now = System.currentTimeMillis();
+        if(now-lastReport >= 1000) {
+            System.out.println(count);
+            count = 0;
+            lastReport = now;
+        }
+    }
+
     private String getDbName() {
         try {
             Properties props = new Properties();
@@ -40,18 +53,22 @@ public class Operations {
 
     public void insertTweets() throws Exception {
         List<String> names = Names.getNames();
+        List<String> countries = Countries.getCountries();
 
         Random r = ThreadLocalRandom.current();
         while (true) {
             String author = names.get(r.nextInt(names.size())) + r.nextInt(10);
+            String country = countries.get(r.nextInt(countries.size()));
             String content = RandomStringUtils.random(40 + r.nextInt(100));
             coll.insertOne(
                     new Document("date", new Date())
                             .append("author", author)
+                            .append("country", country)
                             .append("content", content)
                             .append("tags", randomTags(r))
             );
-            Thread.sleep(10);
+            reportProgress(1);
+            Thread.sleep(1);
         }
     }
 
@@ -59,6 +76,7 @@ public class Operations {
         String author = coll.find().first().getString("author");
         while (true) {
             coll.count(new Document("author", author));
+            reportProgress(1);
             Thread.sleep(10);
         }
     }
@@ -72,6 +90,7 @@ public class Operations {
                     .sort(new Document("date", -1))
                     .limit(1000)
                     .forEach(doNothing);
+            reportProgress(1);
             Thread.sleep(10);
         }
     }
