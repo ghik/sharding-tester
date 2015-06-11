@@ -81,12 +81,26 @@ public class Operations {
         }
     }
 
-    public void getTweets() throws Exception {
+    public void getUserTweets() throws Exception {
         String author = coll.find().first().getString("author");
         Consumer<Document> doNothing = (d -> {
         });
         while (true) {
             coll.find(new Document("author", author))
+                    .sort(new Document("date", -1))
+                    .limit(1000)
+                    .forEach(doNothing);
+            reportProgress(1);
+            Thread.sleep(10);
+        }
+    }
+
+    public void getCountryTweets() throws Exception {
+        String author = coll.find().first().getString("country");
+        Consumer<Document> doNothing = (d -> {
+        });
+        while (true) {
+            coll.find(new Document("country", author))
                     .sort(new Document("date", -1))
                     .limit(1000)
                     .forEach(doNothing);
