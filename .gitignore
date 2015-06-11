@@ -12,7 +12,9 @@
 hs_err_pid*
 
 target
+build
 .idea
+.gradle
 *.iml
 *.ipr
 *.iws
